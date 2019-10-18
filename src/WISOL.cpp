@@ -22,7 +22,7 @@ int init()
 */
 int WISOL::initSigfox(){
 	// Init Serial
-	Serial.begin(9600);
+	Serial2.begin(9600);
 	currentZone = getZone();
 
 	switch (currentZone){
@@ -111,7 +111,7 @@ int WISOL::resetMacroChannel() {
 	receivedMsg = (recvMsg *)malloc(sizeof(recvMsg));
 	receivedResult = sendMessage("AT$RC", 5, receivedMsg);
 	if (receivedResult == -1){
-		Serial.println("Cannot reset Macro Channel.");
+		Serial1.println("Cannot reset Macro Channel.");
 		clearBuffer();
 		ret = 1;
 	}
@@ -154,7 +154,7 @@ void WISOL::printRecv(char *in, const int len) {
 	for (int i=0; i<len; i++){
 		Serial1.print(in[i]);
 	}
-	Serial.println("");
+	Serial2.println("");
 	clearBuffer();
 }
 
@@ -304,20 +304,20 @@ int WISOL::sendPayloadProcess(uint8_t *outData, const uint8_t len, const int dow
 	delay(20);
 	Buffer_Init();
 	for (int i=0; i<headerLen; i++){
-		Serial.print(header[i]); // print header first
+		Serial2.print(header[i]); // print header first
 	}
 
 	for (int i=0; i<sendLen; i++){
-		Serial.print(hex_str[i]); // print payload
+		Serial2.print(hex_str[i]); // print payload
 	}
 
 	if (downlink == 1){
-		Serial.print(",1");
+		Serial2.print(",1");
 	} else {
 
 	}
 	
-	Serial.println('\0'); // send end terminal
+	Serial2.println('\0'); // send end terminal
 	free(hex_str); // free hex_str from the memory
 
 	if (receivedMsg != NULL){
@@ -360,9 +360,9 @@ int WISOL::sendMessage(const char *outData, const uint8_t len, recvMsg *received
 	clearBuffer();
 	Buffer_Init(); // prepare buffer
 	for (int i=0; i<len; i++){
-		Serial.print(outData[i]); // send message
+		Serial2.print(outData[i]); // send message
 	}
-	Serial.println('\0'); // send end terminal
+	Serial2.println('\0'); // send end terminal
 
 	receivedResult = getRecvMsg(receivedMsg, 0); // read ack or return payload
 
@@ -468,7 +468,7 @@ int WISOL::getRecvMsg(recvMsg *receivedMsg, const int downlink){
 	}
 
 	// Wait for the incomming message
-	while ((Serial.available() == 0) && (count <= countMax)) {
+	while ((Serial2.available() == 0) && (count <= countMax)) {
 		count++;
 		delay(100);
 	}
@@ -482,14 +482,14 @@ int WISOL::getRecvMsg(recvMsg *receivedMsg, const int downlink){
 int WISOL::getdownlinkMsg(recvMsg *receivedMsg){
 
 	// Prepare receive message format
-	receivedMsg->len = Serial1.available();
+	receivedMsg->len = Serial2.available();
 	receivedMsg->inData = master_receive;
 	for (int i=0; i<BUFFER_SIZE; i++) { // clear master receive buffer
 		master_receive[i] = '\0';
 	}
 	if (receivedMsg->len){
 		for (int i=0; (i < receivedMsg->len) && (i < BUFFER_SIZE); i++){   // FIXED FOR BUFFER OVERRUN!
-			master_receive[i] = Serial1.read(); // Read receive message
+			master_receive[i] = Serial2.read(); // Read receive message
 		}
 
 		if (strCmp(receivedMsg->inData, "OK", 2)==1){
@@ -522,8 +522,8 @@ void WISOL::ASCII2Hex(uint8_t* input, int length, char* buf_str){
 
 /* Not used */
 recvMsg WISOL::goDeepSleep(){
-	Serial.println("AT$P=2");
-	Serial.print('\0');
+	Serial2.println("AT$P=2");
+	Serial2.print('\0');
 }
 
 
@@ -542,7 +542,7 @@ void WISOL::wakeDeepSleep(){
 }
 
 void WISOL::clearBuffer(){
-	Serial.print("\0"); // Make sure there is no unfinished message.
+	Serial2.print("\0"); // Make sure there is no unfinished message.
 	switch (currentZone){
 		case RCZ1:
 		{
@@ -565,8 +565,8 @@ void WISOL::clearBuffer(){
 		}
 	}
 
-	while (Serial.available()!=0){
-		Serial.read();
+	while (Serial2.available()!=0){
+		Serial2.read();
 		delay(10);
 	}
 }

@@ -7,9 +7,11 @@
 extern "C"
 {
   void vReadBme280SensorTask(void *pvParameters);
+  void vProcessDataTask(void *pvParameters);
 }
 
 void GetDeviceID();
+void Send_Pload(uint8_t *sendData, const uint8_t len);
 
 Isigfox *isigfox = new WISOL();
 
@@ -32,11 +34,16 @@ void setup() {
   }
 
 
-
+ xTaskCreate(vProcessDataTask,
+                (const signed char * const)"Task3",
+                configMINIMAL_STACK_SIZE + 500,
+                NULL,
+                tskIDLE_PRIORITY + 5,
+                NULL);
  
-  xTaskCreate(vReadBme280SensorTask,
+xTaskCreate(vReadBme280SensorTask,
                 (const signed char * const)"Task1",
-                128,
+                configMINIMAL_STACK_SIZE,
                 NULL,
                 1,
                 NULL);
@@ -75,6 +82,23 @@ void vReadBme280SensorTask(void *pvParameters) {
     }
 }
 
+void vProcessDataTask(void *pvParameters) {
+    
+    const uint8_t payloadSize = 12; //in bytes
+    uint8_t buf_str[payloadSize];
+    uint8_t counter = 1;
+    
+    for (;;) {
+        buf_str[0] = counter;
+        digitalWrite(PC13, LOW);
+        Serial1.print("Send data:"); Serial1.println(counter);
+        Send_Pload(buf_str, payloadSize);
+        digitalWrite(PC13, HIGH);
+        counter ++;
+        vTaskDelay(110000);
+    }
+}
+
 
 void GetDeviceID(){
   recvMsg *RecvMsg;
@@ -89,4 +113,37 @@ void GetDeviceID(){
   }
   Serial1.println("");
   free(RecvMsg);
+}
+
+void Send_Pload(uint8_t *sendData, const uint8_t len){
+  // No downlink message require
+  recvMsg *RecvMsg;
+
+  RecvMsg = (recvMsg *)malloc(sizeof(recvMsg));
+  isigfox->sendPayload(sendData, len, 0, RecvMsg);
+  for (int i = 0; i < RecvMsg->len; i++) {
+    Serial.print(RecvMsg->inData[i]);
+  }
+  Serial.println("");
+  free(RecvMsg);
+
+
+  // If want to get blocking downlink message, use the folling block instead
+  /*
+  recvMsg *RecvMsg;
+
+  RecvMsg = (recvMsg *)malloc(sizeof(recvMsg));
+  Isigfox->sendPayload(sendData, len, 1, RecvMsg);
+  for (int i=0; i<RecvMsg->len; i++){
+    Serial.print(RecvMsg->inData[i]);
+  }
+  Serial.println("");
+  free(RecvMsg);
+  */
+
+  // If want to get non-blocking downlink message, use the folling block instead
+  /*
+  Isigfox->sendPayload(sendData, len, 1);
+  timer.setTimeout(46000, getDLMsg);
+  */
 }
