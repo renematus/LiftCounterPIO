@@ -5,16 +5,21 @@
 #include "Isigfox.h"
 #include "WISOL.h"
 #include <BME280.h>
+#include <RTClock.h>
 
 extern "C"
 {
   void vReadBme280SensorTask(void *pvParameters);
   void vProcessDataTask(void *pvParameters);
+  void vGetDownlinkMessageTask(void *pvParameters);
+  void vCheckSignalsTask(void *pvParameters);
 }
 
 void GetDeviceID();
 void Send_Pload(uint8_t *sendData, const uint8_t len);
+void getDLMsg();
 
+RTClock rt (RTCSEL_LSE);
 Isigfox *isigfox = new WISOL();
 BME280 bme(Wire,0x76);
 
@@ -22,6 +27,8 @@ void setup() {
   // put your setup code here, to run once:
    pinMode(PC13, OUTPUT);
    Serial1.begin(115200);   //Debug console  
+   //Serial2  =  Sigfox
+   Serial3.begin(9600);   // BLE serial HC06
 
 
   Serial1.println("Start Sigfox Module"); // Make a clean restart
@@ -53,7 +60,21 @@ xTaskCreate(vReadBme280SensorTask,
                 (const signed char * const)"Task1",
                 configMINIMAL_STACK_SIZE,
                 NULL,
-                1,
+                tskIDLE_PRIORITY + 2,
+                NULL);
+
+xTaskCreate(vCheckSignalsTask,
+                (const signed char * const)"Task4",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                tskIDLE_PRIORITY + 1,
+                NULL);
+
+xTaskCreate(vGetDownlinkMessageTask,
+                (const signed char * const)"Task2",
+                configMINIMAL_STACK_SIZE + 500,
+                NULL,
+                tskIDLE_PRIORITY + 3,
                 NULL);
 
  // start scheduler
@@ -105,6 +126,45 @@ void vProcessDataTask(void *pvParameters) {
     }
 }
 
+void vGetDownlinkMessageTask(void *pvParameters) {
+    for (;;) {
+
+      //Todo lock, becouse use sigfox modem like send message
+        Serial1.print("Check downlink message");
+        getDLMsg();
+        vTaskDelay(60000);
+    }
+}
+
+void vCheckSignalsTask(void *pvParameters) {
+    for (;;) {
+
+        //Serial.print("Up counter: "); Serial.println(BendCounter::getCounter());
+        //Serial.print("Down counter: "); Serial.println(downCounter);
+
+        tm_t current_time;
+        rt.getTime(current_time);
+
+        Serial1.print("time is: ");
+        Serial1.print(rt.day()); Serial1.print(". ");
+        Serial1.print(rt.month()); Serial1.print(". ");
+        Serial1.print(rt.year()); Serial1.print(" ");
+        Serial1.print(rt.hour()); Serial1.print(": ");
+        Serial1.print(rt.minute()); Serial1.print(": ");
+        Serial1.println(rt.second());
+
+        Serial3.print("time is: ");
+        Serial3.print(rt.day()); Serial3.print(". ");
+        Serial3.print(rt.month()); Serial3.print(". ");
+        Serial3.print(rt.year()); Serial3.print(" ");
+        Serial3.print(rt.hour()); Serial3.print(": ");
+        Serial3.print(rt.minute()); Serial3.print(": ");
+        Serial3.println(rt.second());
+
+        vTaskDelay(5000);
+    }
+}
+
 
 void GetDeviceID(){
   recvMsg *RecvMsg;
@@ -114,6 +174,19 @@ void GetDeviceID(){
   isigfox->sendMessage(msg, 7, RecvMsg);
 
   Serial.print("Device ID: ");
+  for (int i=0; i<RecvMsg->len; i++){
+    Serial1.print(RecvMsg->inData[i]);
+  }
+  Serial1.println("");
+  free(RecvMsg);
+}
+
+void getDLMsg(){
+  recvMsg *RecvMsg;
+  int result;
+
+  RecvMsg = (recvMsg *)malloc(sizeof(recvMsg));
+  result = isigfox->getdownlinkMsg(RecvMsg);
   for (int i=0; i<RecvMsg->len; i++){
     Serial1.print(RecvMsg->inData[i]);
   }
