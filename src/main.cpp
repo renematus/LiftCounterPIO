@@ -1,8 +1,10 @@
 #include <Arduino.h>
 #include <FreeRTOS.h>
 #include <task.h>
+#include <Wire.h>
 #include "Isigfox.h"
 #include "WISOL.h"
+#include <BME280.h>
 
 extern "C"
 {
@@ -14,6 +16,7 @@ void GetDeviceID();
 void Send_Pload(uint8_t *sendData, const uint8_t len);
 
 Isigfox *isigfox = new WISOL();
+BME280 bme(Wire,0x76);
 
 void setup() {
   // put your setup code here, to run once:
@@ -22,8 +25,6 @@ void setup() {
 
 
   Serial1.println("Start Sigfox Module"); // Make a clean restart
-
-
   int flagInit = -1;
   while (flagInit == -1) {
     Serial1.println(""); // Make a clean restart
@@ -31,6 +32,13 @@ void setup() {
     flagInit = isigfox->initSigfox();
     isigfox->testComms();
     GetDeviceID();
+  }
+
+ 
+  Serial1.println("Start BME Module"); 
+  if (bme.begin() < 0) {
+    Serial1.println("Error communicating with sensor, check wiring and I2C address");
+    while(1){}
   }
 
 
@@ -67,16 +75,14 @@ void loop() {
 
 void vReadBme280SensorTask(void *pvParameters) {
     for (;;) {
+        bme.readSensor();
 
-         Serial1.println("Text");
-        // bme.readSensor();
-
-        //   // displaying the data
-        //   Serial.print(bme.getPressure_Pa(),6);
-        //   Serial.print("\t");
-        //   Serial.print(bme.getTemperature_C(),2);
-        //   Serial.print("\t");
-        //   Serial.println(bme.getHumidity_RH(),2);
+          // displaying the data
+          Serial1.print(bme.getPressure_Pa(),6);
+          Serial1.print("\t");
+          Serial1.print(bme.getTemperature_C(),2);
+          Serial1.print("\t");
+          Serial1.println(bme.getHumidity_RH(),2);
 
         vTaskDelay(10000);
     }
