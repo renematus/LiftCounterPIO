@@ -1,16 +1,37 @@
 #include <Arduino.h>
 #include <FreeRTOS.h>
 #include <task.h>
+#include "Isigfox.h"
+#include "WISOL.h"
 
 extern "C"
 {
   void vReadBme280SensorTask(void *pvParameters);
 }
 
+void GetDeviceID();
+
+Isigfox *isigfox = new WISOL();
+
 void setup() {
   // put your setup code here, to run once:
    pinMode(PC13, OUTPUT);
    Serial1.begin(115200);   //Debug console  
+
+
+  Serial1.println("Start Sigfox Module"); // Make a clean restart
+
+
+  int flagInit = -1;
+  while (flagInit == -1) {
+    Serial1.println(""); // Make a clean restart
+    delay(1000);
+    flagInit = isigfox->initSigfox();
+    isigfox->testComms();
+    GetDeviceID();
+  }
+
+
 
  
   xTaskCreate(vReadBme280SensorTask,
@@ -52,4 +73,20 @@ void vReadBme280SensorTask(void *pvParameters) {
 
         vTaskDelay(10000);
     }
+}
+
+
+void GetDeviceID(){
+  recvMsg *RecvMsg;
+  const char msg[] = "AT$I=10";
+
+  RecvMsg = (recvMsg *)malloc(sizeof(recvMsg));
+  isigfox->sendMessage(msg, 7, RecvMsg);
+
+  Serial.print("Device ID: ");
+  for (int i=0; i<RecvMsg->len; i++){
+    Serial1.print(RecvMsg->inData[i]);
+  }
+  Serial1.println("");
+  free(RecvMsg);
 }
