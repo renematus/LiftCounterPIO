@@ -6,6 +6,7 @@
 #include "WISOL.h"
 #include <BME280.h>
 #include <RTClock.h>
+#include "BendCounter.h"
 
 extern "C"
 {
@@ -22,6 +23,8 @@ void getDLMsg();
 RTClock rt (RTCSEL_LSE);
 Isigfox *isigfox = new WISOL();
 BME280 bme(Wire,0x76);
+
+BendCounter counter;
 
 void setup() {
   // put your setup code here, to run once:
@@ -47,6 +50,8 @@ void setup() {
     Serial1.println("Error communicating with sensor, check wiring and I2C address");
     while(1){}
   }
+
+  counter.init();
 
 
  xTaskCreate(vProcessDataTask,
