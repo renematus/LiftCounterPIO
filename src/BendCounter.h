@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 #include <EEPROM.h>
+#include "global.h"
 
 const uint16 counterAddress = 0x10;
 

@@ -8,6 +8,7 @@
 #include <RTClock.h>
 #include <SerialCommand.h>
 #include "BendCounter.h"
+#include "global.h"
 
 extern "C"
 {
@@ -28,6 +29,8 @@ void configureTimeDay();
 void configureTimeMonth();
 void configureTimeYear();
 
+
+
 RTClock rt (RTCSEL_LSE);
 Isigfox *isigfox = new WISOL();
 BME280 bme(Wire,0x76);
@@ -43,10 +46,10 @@ void setup() {
    Serial3.begin(9600);   // BLE serial HC06
 
 
-  Serial1.println("Start Sigfox Module"); // Make a clean restart
+  DEBUG_CONSOLE.println("Start Sigfox Module"); // Make a clean restart
   int flagInit = -1;
   while (flagInit == -1) {
-    Serial1.println(""); // Make a clean restart
+    DEBUG_CONSOLE.println(""); // Make a clean restart
     delay(1000);
     flagInit = isigfox->initSigfox();
     isigfox->testComms();
@@ -54,9 +57,9 @@ void setup() {
   }
 
  
-  Serial1.println("Start BME Module"); 
+  DEBUG_CONSOLE.println("Start BME Module"); 
   if (bme.begin() < 0) {
-    Serial1.println("Error communicating with sensor, check wiring and I2C address");
+    DEBUG_CONSOLE.println("Error communicating with sensor, check wiring and I2C address");
     while(1){}
   }
 
@@ -108,7 +111,7 @@ xTaskCreate(vSerialCommandReadTask,
 
  // start scheduler
   vTaskStartScheduler();
-  Serial1.println("Insufficient RAM");
+  DEBUG_CONSOLE.println("Insufficient RAM");
   while(1);
 
 }
@@ -130,11 +133,11 @@ void vReadBme280SensorTask(void *pvParameters) {
         bme.readSensor();
 
           // displaying the data
-          Serial1.print(bme.getPressure_Pa(),6);
-          Serial1.print("\t");
-          Serial1.print(bme.getTemperature_C(),2);
-          Serial1.print("\t");
-          Serial1.println(bme.getHumidity_RH(),2);
+          DEBUG_CONSOLE.print(bme.getPressure_Pa(),6);
+          DEBUG_CONSOLE.print("\t");
+          DEBUG_CONSOLE.print(bme.getTemperature_C(),2);
+          DEBUG_CONSOLE.print("\t");
+          DEBUG_CONSOLE.println(bme.getHumidity_RH(),2);
 
         vTaskDelay(10000);
     }
@@ -149,7 +152,7 @@ void vProcessDataTask(void *pvParameters) {
     for (;;) {
         buf_str[0] = counter;
         digitalWrite(PC13, LOW);
-        Serial1.print("Send data:"); Serial1.println(counter);
+        DEBUG_CONSOLE.print("Send data:"); DEBUG_CONSOLE.println(counter);
         Send_Pload(buf_str, payloadSize);
         digitalWrite(PC13, HIGH);
         counter ++;
@@ -161,7 +164,7 @@ void vGetDownlinkMessageTask(void *pvParameters) {
     for (;;) {
 
       //Todo lock, becouse use sigfox modem like send message
-        Serial1.print("Check downlink message");
+        DEBUG_CONSOLE.print("Check downlink message");
         getDLMsg();
         vTaskDelay(60000);
     }
@@ -176,13 +179,13 @@ void vCheckSignalsTask(void *pvParameters) {
         tm_t current_time;
         rt.getTime(current_time);
 
-        Serial1.print("time is: ");
-        Serial1.print(rt.day()); Serial1.print(". ");
-        Serial1.print(rt.month()); Serial1.print(". ");
-        Serial1.print(rt.year()); Serial1.print(" ");
-        Serial1.print(rt.hour()); Serial1.print(": ");
-        Serial1.print(rt.minute()); Serial1.print(": ");
-        Serial1.println(rt.second());
+        DEBUG_CONSOLE.print("time is: ");
+        DEBUG_CONSOLE.print(rt.day()); DEBUG_CONSOLE.print(". ");
+        DEBUG_CONSOLE.print(rt.month()); DEBUG_CONSOLE.print(". ");
+        DEBUG_CONSOLE.print(rt.year()); DEBUG_CONSOLE.print(" ");
+        DEBUG_CONSOLE.print(rt.hour()); DEBUG_CONSOLE.print(": ");
+        DEBUG_CONSOLE.print(rt.minute()); DEBUG_CONSOLE.print(": ");
+        DEBUG_CONSOLE.println(rt.second());
 
         Serial3.print("time is: ");
         Serial3.print(rt.day()); Serial3.print(". ");
@@ -206,9 +209,9 @@ void GetDeviceID(){
 
   Serial.print("Device ID: ");
   for (int i=0; i<RecvMsg->len; i++){
-    Serial1.print(RecvMsg->inData[i]);
+    DEBUG_CONSOLE.print(RecvMsg->inData[i]);
   }
-  Serial1.println("");
+  DEBUG_CONSOLE.println("");
   free(RecvMsg);
 }
 
@@ -219,9 +222,9 @@ void getDLMsg(){
   RecvMsg = (recvMsg *)malloc(sizeof(recvMsg));
   result = isigfox->getdownlinkMsg(RecvMsg);
   for (int i=0; i<RecvMsg->len; i++){
-    Serial1.print(RecvMsg->inData[i]);
+    DEBUG_CONSOLE.print(RecvMsg->inData[i]);
   }
-  Serial1.println("");
+  DEBUG_CONSOLE.println("");
   free(RecvMsg);
 }
 
@@ -232,9 +235,9 @@ void Send_Pload(uint8_t *sendData, const uint8_t len){
   RecvMsg = (recvMsg *)malloc(sizeof(recvMsg));
   isigfox->sendPayload(sendData, len, 0, RecvMsg);
   for (int i = 0; i < RecvMsg->len; i++) {
-    Serial1.print(RecvMsg->inData[i]);
+    DEBUG_CONSOLE.print(RecvMsg->inData[i]);
   }
-  Serial1.println("");
+  DEBUG_CONSOLE.println("");
   free(RecvMsg);
 
 
@@ -271,8 +274,8 @@ void configureTimeMinute()
     rt.getTime(set_time);
     set_time.minute = minute;
     rt.setTime(set_time);
-    Serial1.print("Minute was set to: ");
-    Serial1.println(minute);
+    DEBUG_CONSOLE.print("Minute was set to: ");
+    DEBUG_CONSOLE.println(minute);
   }
 }
 
@@ -289,8 +292,8 @@ void configureTimeSec()
     rt.getTime(set_time);
     set_time.second = second;
     rt.setTime(set_time);
-    Serial1.print("Sec was set to: ");
-    Serial1.println(second);
+    DEBUG_CONSOLE.print("Sec was set to: ");
+    DEBUG_CONSOLE.println(second);
   }
 }
 
@@ -307,8 +310,8 @@ void configureTimeHour()
     rt.getTime(set_time);
     set_time.hour = hour;
     rt.setTime(set_time);
-    Serial1.print("Hour was set to: ");
-    Serial1.println(hour);
+    DEBUG_CONSOLE.print("Hour was set to: ");
+    DEBUG_CONSOLE.println(hour);
   }
 }
 
@@ -325,8 +328,8 @@ void configureTimeDay()
     rt.getTime(set_time);
     set_time.day = day;
     rt.setTime(set_time);
-    Serial1.print("Day was set to: ");
-    Serial1.println(day);
+    DEBUG_CONSOLE.print("Day was set to: ");
+    DEBUG_CONSOLE.println(day);
   }
 }
 
@@ -343,8 +346,8 @@ void configureTimeMonth()
     rt.getTime(set_time);
     set_time.month = month;
     rt.setTime(set_time);
-    Serial1.print("Month was set to: ");
-    Serial1.println(month);
+    DEBUG_CONSOLE.print("Month was set to: ");
+    DEBUG_CONSOLE.println(month);
   }
 }
 
@@ -361,7 +364,7 @@ void configureTimeYear()
     rt.getTime(set_time);
     set_time.year = year;
     rt.setTime(set_time);
-    Serial1.print("Year was set to: ");
-    Serial1.println(year);
+    DEBUG_CONSOLE.print("Year was set to: ");
+    DEBUG_CONSOLE.println(year);
   }
 }

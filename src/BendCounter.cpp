@@ -7,6 +7,8 @@
 #include "Arduino.h"
 #include "BendCounter.h"
 
+
+
 BendCounter::BendCounter()
 {};
 
@@ -41,7 +43,7 @@ void BendCounter::up()
     {
       counter++;
       EEPROM.write(counterAddress, counter);
-      Serial1.println(counter);
+      DEBUG_CONSOLE.println(counter);
     }
     last_interrupt_time = interrupt_time;
 }
@@ -56,7 +58,7 @@ void BendCounter::down()
     {
       counter++;
       EEPROM.write(counterAddress, counter);
-      Serial1.println(counter);
+      DEBUG_CONSOLE.println(counter);
     }
     last_interrupt_time = interrupt_time;
 }

@@ -7,6 +7,8 @@
 
 #include "Arduino.h"
 #include "WISOL.h"
+#include "global.h"
+
 
 
 // Assign IO for WISOL - Not needed since WISOL share TX, RX with Ardruino
@@ -28,27 +30,27 @@ int WISOL::initSigfox(){
 	switch (currentZone){
 		case RCZ1:
 		{
-			Serial1.println("RCZ1");
+			DEBUG_CONSOLE.println("RCZ1");
 			break;
 		}
 		case RCZ2:
 		{
-			Serial1.println("RCZ2");
+			DEBUG_CONSOLE.println("RCZ2");
 			break;
 		}
 		case RCZ4:
 		{
-			Serial1.println("RCZ4");
+			DEBUG_CONSOLE.println("RCZ4");
 			break;
 		}
 		case RCZ3:
 		{
-			Serial1.println("RCZ3");
+			DEBUG_CONSOLE.println("RCZ3");
 			break;
 		}
 		default:
 		{
-			Serial1.println("No zone");
+			DEBUG_CONSOLE.println("No zone");
 			clearBuffer();
 			return -1;
 		}
@@ -66,14 +68,14 @@ int WISOL::setPublicKey() {
 	receivedResult = sendMessage("ATS410=1", 8, receivedMsg);
 
 	if (receivedResult == -1){
-		Serial1.println("Cannot set public key.");
+		DEBUG_CONSOLE.println("Cannot set public key.");
 		clearBuffer();
 		ret = 1;
 	} else {
 		for (int i=0; i<receivedMsg->len; i++){
-			Serial1.print(receivedMsg->inData[i]);
+			DEBUG_CONSOLE.print(receivedMsg->inData[i]);
 		}
-		Serial1.println("");
+		DEBUG_CONSOLE.println("");
 	}
 
 	free(receivedMsg);
@@ -89,14 +91,14 @@ int WISOL::setPrivateKey() {
 	receivedResult = sendMessage("ATS410=0", 8, receivedMsg);
 
 	if (receivedResult == -1){
-		Serial1.println("Cannot set private key.");
+		DEBUG_CONSOLE.println("Cannot set private key.");
 		clearBuffer();
 		ret = 1;
 	} else {
 		for (int i=0; i<receivedMsg->len; i++){
-			Serial1.print(receivedMsg->inData[i]);
+			DEBUG_CONSOLE.print(receivedMsg->inData[i]);
 		}
-		Serial1.println("");
+		DEBUG_CONSOLE.println("");
 	}
 
 	free(receivedMsg);
@@ -111,7 +113,7 @@ int WISOL::resetMacroChannel() {
 	receivedMsg = (recvMsg *)malloc(sizeof(recvMsg));
 	receivedResult = sendMessage("AT$RC", 5, receivedMsg);
 	if (receivedResult == -1){
-		Serial1.println("Cannot reset Macro Channel.");
+		DEBUG_CONSOLE.println("Cannot reset Macro Channel.");
 		clearBuffer();
 		ret = 1;
 	}
@@ -152,7 +154,7 @@ int WISOL::setZone(){
 
 void WISOL::printRecv(char *in, const int len) {
 	for (int i=0; i<len; i++){
-		Serial1.print(in[i]);
+		DEBUG_CONSOLE.print(in[i]);
 	}
 	Serial2.println("");
 	clearBuffer();
@@ -211,25 +213,25 @@ int WISOL::sendPayload(uint8_t *outData, const uint8_t len, const int downlink, 
 	int receivedResult;
 
 	if ((len > 12) || (len <= 0)){
-		Serial1.println("Payload length must be positive and not be longer than 12 bytes.");
+		DEBUG_CONSOLE.println("Payload length must be positive and not be longer than 12 bytes.");
 		clearBuffer();
 		return -1;
 	}
 
 	if (outData == NULL){
-		Serial1.println("outData is NULL.");
+		DEBUG_CONSOLE.println("outData is NULL.");
 		clearBuffer();
 		return -1;
 	}
 
 	if (!((downlink == 0) || (downlink == 1))){
-		Serial1.println("downlink must be 0 or 1.");
+		DEBUG_CONSOLE.println("downlink must be 0 or 1.");
 		clearBuffer();
 		return -1;
 	}
 
 	if (receivedMsg == NULL){
-		Serial1.println("receivedMsg is NULL.");
+		DEBUG_CONSOLE.println("receivedMsg is NULL.");
 		clearBuffer();
 		return -1;
 	}
@@ -251,19 +253,19 @@ int WISOL::sendPayload(uint8_t *outData, const uint8_t len, int downlink){
 	int receivedResult;
 
 	if ((len > 12) || (len <= 0)){
-		Serial1.println("Payload length must be positive and not be longer than 12 bytes.");
+		DEBUG_CONSOLE.println("Payload length must be positive and not be longer than 12 bytes.");
 		clearBuffer();
 		return -1;
 	}
 
 	if (outData == NULL){
-		Serial1.println("outData is NULL.");
+		DEBUG_CONSOLE.println("outData is NULL.");
 		clearBuffer();
 		return -1;
 	}
 
 	if (!((downlink == 0) || (downlink == 1))){
-		Serial1.println("downlink must be 0 or 1.");
+		DEBUG_CONSOLE.println("downlink must be 0 or 1.");
 		clearBuffer();
 		return -1;
 	}
@@ -296,7 +298,7 @@ int WISOL::sendPayloadProcess(uint8_t *outData, const uint8_t len, const int dow
 	receivedResult = prepareZone();
 	
 	if (receivedResult == -1){
-		Serial1.println("Prepare zone failed");
+		DEBUG_CONSOLE.println("Prepare zone failed");
 		clearBuffer();
 		return -1;
 	}
@@ -340,19 +342,19 @@ int WISOL::sendMessage(const char *outData, const uint8_t len, recvMsg *received
 	int receivedResult;
 
 	if (len <= 0){
-		Serial1.println("Payload length must be positive.");
+		DEBUG_CONSOLE.println("Payload length must be positive.");
 		clearBuffer();
 		return -1;
 	}
 
 	if (outData == NULL){
-		Serial1.println("outData is NULL.");
+		DEBUG_CONSOLE.println("outData is NULL.");
 		clearBuffer();
 		return -1;
 	}
 
 	if (receivedMsg == NULL){
-		Serial1.println("receivedMsg is NULL.");
+		DEBUG_CONSOLE.println("receivedMsg is NULL.");
 		clearBuffer();
 		return -1;
 	}
@@ -429,9 +431,9 @@ int WISOL::checkChangeZone() {
 	Y = RecvMsg->inData[2];
 	
 	for (int i=0; i<RecvMsg->len; i++){
-		Serial1.print(RecvMsg->inData[i]);
+		DEBUG_CONSOLE.print(RecvMsg->inData[i]);
 	}
-	Serial1.println("");
+	DEBUG_CONSOLE.println("");
 	
 	if ((X=='0') || (Y<'3')) {
 		receivedResult = sendMessage(testchar, (int) strlen(testchar), RecvMsg);
