@@ -28,6 +28,9 @@ void configureTimeHour();
 void configureTimeDay();
 void configureTimeMonth();
 void configureTimeYear();
+void showHelp();
+void showSensors();
+void showTime();
 
 
 
@@ -67,6 +70,9 @@ void setup() {
 
 
   //Configure serial commands
+  sCmd.addCommand("??", showHelp);
+  sCmd.addCommand("st", showTime);
+  sCmd.addCommand("ss", showSensors);
   sCmd.addCommand("tm", configureTimeMinute);
   sCmd.addCommand("ts", configureTimeSec);
   sCmd.addCommand("th", configureTimeHour);
@@ -130,14 +136,14 @@ void vSerialCommandReadTask(void *pvParameters) {
 
 void vReadBme280SensorTask(void *pvParameters) {
     for (;;) {
-        bme.readSensor();
+         bme.readSensor();
 
-          // displaying the data
-          DEBUG_CONSOLE.print(bme.getPressure_Pa(),6);
-          DEBUG_CONSOLE.print("\t");
-          DEBUG_CONSOLE.print(bme.getTemperature_C(),2);
-          DEBUG_CONSOLE.print("\t");
-          DEBUG_CONSOLE.println(bme.getHumidity_RH(),2);
+        //   // displaying the data
+        //   DEBUG_CONSOLE.print(bme.getPressure_Pa(),6);
+        //   DEBUG_CONSOLE.print("\t");
+        //   DEBUG_CONSOLE.print(bme.getTemperature_C(),2);
+        //   DEBUG_CONSOLE.print("\t");
+        //   DEBUG_CONSOLE.println(bme.getHumidity_RH(),2);
 
         vTaskDelay(10000);
     }
@@ -175,25 +181,6 @@ void vCheckSignalsTask(void *pvParameters) {
 
         //Serial.print("Up counter: "); Serial.println(BendCounter::getCounter());
         //Serial.print("Down counter: "); Serial.println(downCounter);
-
-        tm_t current_time;
-        rt.getTime(current_time);
-
-        DEBUG_CONSOLE.print("time is: ");
-        DEBUG_CONSOLE.print(rt.day()); DEBUG_CONSOLE.print(". ");
-        DEBUG_CONSOLE.print(rt.month()); DEBUG_CONSOLE.print(". ");
-        DEBUG_CONSOLE.print(rt.year()); DEBUG_CONSOLE.print(" ");
-        DEBUG_CONSOLE.print(rt.hour()); DEBUG_CONSOLE.print(": ");
-        DEBUG_CONSOLE.print(rt.minute()); DEBUG_CONSOLE.print(": ");
-        DEBUG_CONSOLE.println(rt.second());
-
-        Serial3.print("time is: ");
-        Serial3.print(rt.day()); Serial3.print(". ");
-        Serial3.print(rt.month()); Serial3.print(". ");
-        Serial3.print(rt.year()); Serial3.print(" ");
-        Serial3.print(rt.hour()); Serial3.print(": ");
-        Serial3.print(rt.minute()); Serial3.print(": ");
-        Serial3.println(rt.second());
 
         vTaskDelay(5000);
     }
@@ -367,4 +354,40 @@ void configureTimeYear()
     DEBUG_CONSOLE.print("Year was set to: ");
     DEBUG_CONSOLE.println(year);
   }
+}
+
+//Argument vlozime  command [mezera] argument [enter]
+void showHelp()
+{
+  DEBUG_CONSOLE.println("?? -  help ");
+  DEBUG_CONSOLE.println("st -  time ");
+  DEBUG_CONSOLE.println("ss -  sensors ");
+}
+
+void showTime()
+{
+        tm_t current_time;
+        rt.getTime(current_time);
+
+        DEBUG_CONSOLE.print("time is: ");
+        DEBUG_CONSOLE.print(rt.day()); DEBUG_CONSOLE.print(". ");
+        DEBUG_CONSOLE.print(rt.month()); DEBUG_CONSOLE.print(". ");
+        DEBUG_CONSOLE.print(rt.year()); DEBUG_CONSOLE.print(" ");
+        DEBUG_CONSOLE.print(rt.hour()); DEBUG_CONSOLE.print(": ");
+        DEBUG_CONSOLE.print(rt.minute()); DEBUG_CONSOLE.print(": ");
+        DEBUG_CONSOLE.println(rt.second());
+}
+
+void showSensors()
+{
+
+      // displaying the data
+      DEBUG_CONSOLE.print("Pressure: ");
+      DEBUG_CONSOLE.println(bme.getPressure_Pa(),0);
+
+      DEBUG_CONSOLE.print("Temperature: ");
+      DEBUG_CONSOLE.println(bme.getTemperature_C(),2);
+      
+      DEBUG_CONSOLE.print("Humidity: ");
+      DEBUG_CONSOLE.println(bme.getHumidity_RH(),2);
 }
