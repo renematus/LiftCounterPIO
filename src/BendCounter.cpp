@@ -8,18 +8,17 @@
 #include "BendCounter.h"
 
 
-
 BendCounter::BendCounter()
 {};
 
 void BendCounter::init()
 {
-    EEPROM.PageBase0 = 0x801F000;
-	  EEPROM.PageBase1 = 0x801F800;
-	  EEPROM.PageSize  = 0x400;
+  EEPROM.PageBase0 = 0x801F000;
+	EEPROM.PageBase1 = 0x801F800;
+	EEPROM.PageSize  = 0x400;
 
   counter= EEPROM.read(counterAddress);
-  if (counter == 0xFFFF)
+  if ( counter == 0xFFFF)
   {
      EEPROM.write(counterAddress, 0);
   }
@@ -36,6 +35,7 @@ void BendCounter::clearCounter()
 {
      DEBUG_CONSOLE.println("Clear ---------------------------------------");
      EEPROM.write(counterAddress, 0);
+     counter= EEPROM.read(counterAddress);
 }
 
 void BendCounter::up()
@@ -44,7 +44,7 @@ void BendCounter::up()
     static unsigned long last_interrupt_time = 0;
     unsigned long interrupt_time = millis();
     // If interrupts come faster than 200ms, assume it's a bounce and ignore
-    if (interrupt_time - last_interrupt_time > 200)
+    if (interrupt_time - last_interrupt_time > 400)
     {
       counter++;
       EEPROM.write(counterAddress, counter);
@@ -59,7 +59,7 @@ void BendCounter::down()
     static unsigned long last_interrupt_time = 0;
     unsigned long interrupt_time = millis();
     // If interrupts come faster than 200ms, assume it's a bounce and ignore
-    if (interrupt_time - last_interrupt_time > 200)
+    if (interrupt_time - last_interrupt_time > 400)
     {
       counter++;
       EEPROM.write(counterAddress, counter);

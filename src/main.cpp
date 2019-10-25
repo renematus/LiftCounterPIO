@@ -34,14 +34,15 @@ void showTime();
 void showCounter();
 void clearCounter();
 
-
+//Static doesnt work, I dont know why
+volatile uint16 counter = 0;
 
 RTClock rt (RTCSEL_LSE);
 Isigfox *isigfox = new WISOL();
 BME280 bme(Wire,0x76);
 SerialCommand sCmd;
 
-BendCounter counter;
+BendCounter bendCounter;
 
 void setup() {
   // put your setup code here, to run once:
@@ -68,7 +69,7 @@ void setup() {
     while(1){}
   }
 
-  counter.init();
+  bendCounter.init();
 
 
   //Configure serial commands
@@ -407,15 +408,15 @@ void showSensors()
 void showCounter()
 {
       DEBUG_CONSOLE.print("Counter: ");
-      DEBUG_CONSOLE.println(counter.getCounter());
+      DEBUG_CONSOLE.println(bendCounter.getCounter());
 }
 
 void clearCounter()
 {
       DEBUG_CONSOLE.println("Clear counter !!");
-      counter.clearCounter();
+      bendCounter.clearCounter();
       DEBUG_CONSOLE.print("Counter: ");
-      DEBUG_CONSOLE.println(counter.getCounter());
+      DEBUG_CONSOLE.println(bendCounter.getCounter());
 }
 
 

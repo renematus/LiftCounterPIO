@@ -5,6 +5,8 @@
 #include <EEPROM.h>
 #include "global.h"
 
+extern volatile uint16 counter;
+
 const uint16 counterAddress = 0x10;
 
 enum class Direction{
@@ -25,7 +27,6 @@ class BendCounter
 
   private:
     Direction lastDirection;
-    static volatile uint16 counter; 
 };
 
 #endif
