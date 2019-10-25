@@ -20,6 +20,7 @@ class BendCounter
     
     static void up();
     static void down();
+    static void clearCounter();
     static uint16 getCounter() {return counter;};
 
   private:

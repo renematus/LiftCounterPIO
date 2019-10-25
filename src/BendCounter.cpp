@@ -21,7 +21,6 @@ void BendCounter::init()
   counter= EEPROM.read(counterAddress);
   if (counter == 0xFFFF)
   {
-     Serial.println("Clear counter");
      EEPROM.write(counterAddress, 0);
   }
 
@@ -31,6 +30,12 @@ void BendCounter::init()
 
   attachInterrupt(digitalPinToInterrupt(PA11), BendCounter::up, RISING);
   attachInterrupt(digitalPinToInterrupt(PA12), BendCounter::down, RISING);
+}
+
+void BendCounter::clearCounter()
+{
+     DEBUG_CONSOLE.println("Clear ---------------------------------------");
+     EEPROM.write(counterAddress, 0);
 }
 
 void BendCounter::up()

@@ -31,6 +31,8 @@ void configureTimeYear();
 void showHelp();
 void showSensors();
 void showTime();
+void showCounter();
+void clearCounter();
 
 
 
@@ -73,6 +75,8 @@ void setup() {
   sCmd.addCommand("??", showHelp);
   sCmd.addCommand("st", showTime);
   sCmd.addCommand("ss", showSensors);
+  sCmd.addCommand("sc", showCounter);
+  sCmd.addCommand("cc!!", clearCounter);
   sCmd.addCommand("tm", configureTimeMinute);
   sCmd.addCommand("ts", configureTimeSec);
   sCmd.addCommand("th", configureTimeHour);
@@ -362,6 +366,14 @@ void showHelp()
   DEBUG_CONSOLE.println("?? -  help ");
   DEBUG_CONSOLE.println("st -  time ");
   DEBUG_CONSOLE.println("ss -  sensors ");
+  DEBUG_CONSOLE.println("sc -  counter ");
+  DEBUG_CONSOLE.println("cc!! -  clear counter ");
+  DEBUG_CONSOLE.println("ts - set seconds ");
+  DEBUG_CONSOLE.println("tm - set minutes ");
+  DEBUG_CONSOLE.println("th - set hours ");
+  DEBUG_CONSOLE.println("td - set days ");
+  DEBUG_CONSOLE.println("tM - set months ");
+  DEBUG_CONSOLE.println("ty - set years ");
 }
 
 void showTime()
@@ -391,3 +403,19 @@ void showSensors()
       DEBUG_CONSOLE.print("Humidity: ");
       DEBUG_CONSOLE.println(bme.getHumidity_RH(),2);
 }
+
+void showCounter()
+{
+      DEBUG_CONSOLE.print("Counter: ");
+      DEBUG_CONSOLE.println(counter.getCounter());
+}
+
+void clearCounter()
+{
+      DEBUG_CONSOLE.println("Clear counter !!");
+      counter.clearCounter();
+      DEBUG_CONSOLE.print("Counter: ");
+      DEBUG_CONSOLE.println(counter.getCounter());
+}
+
+
