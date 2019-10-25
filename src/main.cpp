@@ -385,7 +385,7 @@ void showTime()
         DEBUG_CONSOLE.print("time is: ");
         DEBUG_CONSOLE.print(rt.day()); DEBUG_CONSOLE.print(". ");
         DEBUG_CONSOLE.print(rt.month()); DEBUG_CONSOLE.print(". ");
-        DEBUG_CONSOLE.print(rt.year()); DEBUG_CONSOLE.print(" ");
+        DEBUG_CONSOLE.print(20);DEBUG_CONSOLE.print(rt.year()); DEBUG_CONSOLE.print("     ");
         DEBUG_CONSOLE.print(rt.hour()); DEBUG_CONSOLE.print(": ");
         DEBUG_CONSOLE.print(rt.minute()); DEBUG_CONSOLE.print(": ");
         DEBUG_CONSOLE.println(rt.second());

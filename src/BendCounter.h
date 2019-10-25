@@ -24,9 +24,6 @@ class BendCounter
     static void down();
     static void clearCounter();
     static uint16 getCounter() {return counter;};
-
-  private:
-    Direction lastDirection;
 };
 
 #endif

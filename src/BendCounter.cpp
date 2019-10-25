@@ -7,6 +7,7 @@
 #include "Arduino.h"
 #include "BendCounter.h"
 
+Direction lastDirection;
 
 BendCounter::BendCounter()
 {};
@@ -44,10 +45,12 @@ void BendCounter::up()
     static unsigned long last_interrupt_time = 0;
     unsigned long interrupt_time = millis();
     // If interrupts come faster than 200ms, assume it's a bounce and ignore
-    if (interrupt_time - last_interrupt_time > 400)
+    if (lastDirection != Direction::UP && (interrupt_time - last_interrupt_time > 400))
     {
       counter++;
       EEPROM.write(counterAddress, counter);
+      lastDirection = Direction::UP;
+      DEBUG_CONSOLE.print("Counter: ");
       DEBUG_CONSOLE.println(counter);
     }
     last_interrupt_time = interrupt_time;
@@ -59,10 +62,12 @@ void BendCounter::down()
     static unsigned long last_interrupt_time = 0;
     unsigned long interrupt_time = millis();
     // If interrupts come faster than 200ms, assume it's a bounce and ignore
-    if (interrupt_time - last_interrupt_time > 400)
+    if (lastDirection != Direction::DOWN && (interrupt_time - last_interrupt_time > 400))
     {
       counter++;
       EEPROM.write(counterAddress, counter);
+      lastDirection = Direction::DOWN;
+      DEBUG_CONSOLE.print("Counter: ");
       DEBUG_CONSOLE.println(counter);
     }
     last_interrupt_time = interrupt_time;
